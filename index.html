@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>手機掃描大師 - 銀髮族教學系統</title>
     
-    <!-- 為了避免 404 錯誤，我們可以定義一個透明的 favicon 或者使用 Emoji 作為圖示 -->
+    <!-- 強制使用 Emoji 作為 Favicon，避免瀏覽器去尋找不存在的 icon-192.png 或 favicon.ico -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📱</text></svg>">
 
     <!-- 引入 React, ReactDOM, Babel 與 Lucide 圖標庫 -->
@@ -14,6 +14,7 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
         body { 
@@ -27,14 +28,8 @@
             0%, 100% { transform: translateY(-10%); }
             50% { transform: translateY(110%); }
         }
-        /* 優化滾動條 */
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #475569;
-            border-radius: 10px;
-        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
     </style>
 </head>
 <body class="bg-slate-900 overflow-x-hidden">
@@ -43,12 +38,13 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
         
-        const Icon = ({ name, size = 24, className = "", fill = "none" }) => {
+        // 封裝 Lucide 圖標組件，確保每次切換步驟時都能正確渲染圖標
+        const Icon = ({ name, size = 24, className = "" }) => {
             useEffect(() => {
                 if (window.lucide) {
                     window.lucide.createIcons();
                 }
-            }, [name, size, className, fill, window.lucide]);
+            }, [name]);
             return <i data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
         };
 
@@ -62,32 +58,12 @@
             const [cartCount, setCartCount] = useState(0);
 
             const scenarios = [
-                { 
-                    id: 'food', 
-                    name: '餐廳點餐', 
-                    icon: 'utensils', 
-                    color: 'bg-orange-500',
-                    description: '現在很多餐廳都要掃碼看菜單，練習在燈光昏暗時操作。',
-                    isDark: true 
-                },
-                { 
-                    id: 'social', 
-                    name: '加 LINE 好友', 
-                    icon: 'user-plus', 
-                    color: 'bg-green-600',
-                    description: '認識新朋友時，掃描對方的行動條碼就能加好友。',
-                    isDark: false
-                },
-                { 
-                    id: 'hospital', 
-                    name: '醫院報到', 
-                    icon: 'hospital', 
-                    color: 'bg-blue-600',
-                    description: '到醫院看診或領藥，掃描單據可快速報到或查資訊。',
-                    isDark: false
-                },
+                { id: 'food', name: '餐廳點餐', icon: 'utensils', color: 'bg-orange-500', description: '現在很多餐廳都要掃碼看菜單，練習在燈光昏暗時操作。', isDark: true },
+                { id: 'social', name: '加 LINE 好友', icon: 'user-plus', color: 'bg-green-600', description: '認識新朋友時，掃描對方的行動條碼就能加好友。', isDark: false },
+                { id: 'hospital', name: '醫院報到', icon: 'hospital', color: 'bg-blue-600', description: '到醫院看診或領藥，掃描單據可快速報到或查資訊。', isDark: false },
             ];
 
+            // 模擬掃描邏輯與補光燈檢測
             useEffect(() => {
                 if (step === 2) {
                     if (scenario?.isDark && !isFlashlightOn) {
@@ -101,6 +77,7 @@
                         setIsStable(true);
                         
                         setTimeout(() => {
+                            // 模擬隨機出現詐騙警示（教育意義）
                             if (Math.random() > 0.8) {
                                 setShowScamAlert(true);
                             } else {
@@ -130,12 +107,10 @@
                                     <h3 className="text-xl font-bold">點餐系統</h3>
                                 </div>
                                 <div className="flex-1 p-5 space-y-4 overflow-y-auto">
-                                    <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200 text-lg text-yellow-800 font-bold">
-                                        💡 掃描成功！請選擇餐點：
-                                    </div>
+                                    <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200 text-lg text-yellow-800 font-bold">💡 掃描成功！請選擇餐點：</div>
                                     <div className="border-2 border-gray-100 rounded-2xl p-4 flex flex-col gap-4 shadow-sm">
                                         <div className="flex gap-4 items-center">
-                                            <div className="w-20 h-20 bg-gray-200 rounded-xl flex items-center justify-center text-[10px] text-gray-500 font-bold text-center p-2 leading-tight text-balance">牛肉麵圖片</div>
+                                            <div className="w-20 h-20 bg-gray-200 rounded-xl flex items-center justify-center text-[10px] text-gray-500 font-bold text-center p-2 leading-tight">牛肉麵圖片</div>
                                             <div className="flex-1">
                                                 <h4 className="font-bold text-xl leading-none">古早味牛肉麵</h4>
                                                 <p className="text-orange-600 font-black text-lg mt-1">$160</p>
@@ -210,13 +185,13 @@
                 <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center p-4 md:p-10 select-none overflow-hidden">
                     <div className="w-full max-w-md text-center mb-6">
                         <h1 className="text-4xl font-black text-yellow-400 drop-shadow-md tracking-tight">手機掃描大師</h1>
-                        <p className="text-gray-400 mt-2 text-lg">簡單、安全、好上手</p>
+                        <p className="text-gray-400 mt-2 text-lg font-bold">簡單、安全、好上手</p>
                     </div>
 
                     <div className="relative w-full max-w-[340px] aspect-[9/19] bg-black rounded-[3.5rem] border-[10px] border-gray-800 overflow-hidden shadow-2xl ring-4 ring-gray-700/30">
                         {step === 0 && (
                             <div className="flex flex-col h-full p-6 overflow-y-auto">
-                                <h2 className="text-xl font-bold my-6 text-center text-white/90">想練習哪種情境？</h2>
+                                <h2 className="text-xl font-bold my-6 text-center text-white/90 underline decoration-yellow-500 decoration-4 underline-offset-4">想練習哪種情境？</h2>
                                 <div className="space-y-4 pb-4">
                                     {scenarios.map((s) => (
                                         <button key={s.id} onClick={() => handleSelectScenario(s)} className={`${s.color} flex flex-col p-5 rounded-[2rem] shadow-lg active:scale-95 transition-transform text-left w-full border-b-4 border-black/20`}>
@@ -224,7 +199,7 @@
                                                 <div className="bg-white/30 p-2.5 rounded-2xl"><Icon name={s.icon} size={28} /></div>
                                                 <span className="text-xl font-black tracking-tight">{s.name}</span>
                                             </div>
-                                            <p className="text-white/90 text-sm leading-tight">{s.description}</p>
+                                            <p className="text-white/90 text-sm leading-tight font-medium">{s.description}</p>
                                         </button>
                                     ))}
                                 </div>
@@ -239,11 +214,9 @@
                                 </div>
                                 <div className="space-y-4">
                                     <h2 className="text-2xl font-black underline decoration-yellow-500 underline-offset-8">練習：{scenario?.name}</h2>
-                                    <p className="text-lg text-gray-200 leading-relaxed font-bold">
-                                        請雙手拿穩手機，距離條碼約 <span className="text-yellow-400 text-2xl font-black">一個手掌</span> 寬。
-                                    </p>
+                                    <p className="text-lg text-gray-200 leading-relaxed font-bold">請雙手拿穩手機，距離條碼約 <span className="text-yellow-400 text-2xl font-black">一個手掌</span> 寬。</p>
                                 </div>
-                                <button onClick={() => setStep(2)} className="w-full bg-yellow-500 text-black font-black py-5 rounded-3xl text-xl shadow-2xl active:scale-95 transition-transform">啟動相機</button>
+                                <button onClick={() => setStep(2)} className="w-full bg-yellow-500 text-black font-black py-5 rounded-3xl text-xl shadow-2xl active:scale-95 transition-all">啟動相機</button>
                             </div>
                         )}
 
@@ -274,9 +247,7 @@
                                                 <Icon name="alert-triangle" size={60} className="animate-bounce" />
                                                 <h4 className="text-3xl font-black">恭喜中獎！</h4>
                                             </div>
-                                            <p className="text-xl font-bold text-center leading-tight text-slate-700">
-                                                您獲得了 <span className="text-red-600 text-2xl">$10,000</span> 元獎金！
-                                            </p>
+                                            <p className="text-xl font-bold text-center leading-tight text-slate-700">您獲得了 <span className="text-red-600 text-2xl">$10,000</span> 元獎金！</p>
                                             <div className="space-y-3 pt-2">
                                                 <button onClick={() => {setShowScamAlert(false); setStep(0);}} className="w-full bg-red-600 text-white py-4 rounded-xl text-xl font-black active:bg-red-700">⚠️ 這是詐騙，我不點！</button>
                                                 <button onClick={() => {setShowScamAlert(false); setStep(0);}} className="w-full bg-gray-100 text-gray-500 py-3 rounded-xl text-lg font-bold">關閉視窗，保護自己</button>
@@ -303,8 +274,8 @@
 
                     <div className="mt-8 max-w-md w-full">
                         <div className="bg-blue-600/10 border-l-8 border-blue-500 p-5 rounded-r-[2rem] shadow-inner">
-                            <p className="text-blue-100 text-lg leading-snug italic">
-                                <strong className="text-blue-400 text-xl font-black">💡 講師心法：</strong><br/>
+                            <p className="text-blue-100 text-lg leading-snug italic font-medium">
+                                <strong className="text-blue-400 text-xl font-black italic not-italic">💡 講師心法：</strong><br/>
                                 <span className="mt-1 block">長輩們，如果掃不到，試著將手機「慢慢往後退」。這是在練習對焦！</span>
                             </p>
                         </div>

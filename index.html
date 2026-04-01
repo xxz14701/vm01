@@ -5,15 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>手機掃描大師 - 銀髮族教學系統</title>
     
-    <!-- 強制使用 Emoji 作為 Favicon，避免瀏覽器去尋找不存在的 icon-192.png 或 favicon.ico -->
+    <!-- 使用 Emoji 作為 Favicon 避免 404 錯誤 -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📱</text></svg>">
 
-    <!-- 引入 React, ReactDOM, Babel 與 Lucide 圖標庫 -->
+    <!-- 引入 React, ReactDOM, Babel -->
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap');
@@ -38,14 +37,43 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
         
-        // 封裝 Lucide 圖標組件，確保每次切換步驟時都能正確渲染圖標
+        /**
+         * 修正 ICON_PATHS：
+         * 當一個圖標包含多個 SVG 元素時，必須使用 <g> 或 <> 包裹，
+         * 否則 Babel 會拋出 Adjacent JSX elements 錯誤。
+         */
+        const ICON_PATHS = {
+            'utensils': <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7" />,
+            'user-plus': <g><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="16" x2="22" y1="11" y2="11"/></g>,
+            'hospital': <path d="M12 6v4M10 8h4M18 22V7a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v15M21 22H3" />,
+            'smartphone': <g><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01" /></g>,
+            'zap': <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />,
+            'zap-off': <g><line x1="2" x2="22" y1="2" y2="22"/><polyline points="12.41 6.75 13 2 10.57 4.92"/><polyline points="18.57 12.91 21 10 15.66 10"/><polyline points="8 8 3 14 12 14 11 22 16 16"/></g>,
+            'move': <g><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="22"/></g>,
+            'alert-triangle': <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3ZM12 9v4M12 17h.01" />,
+            'check-circle-2': <g><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></g>,
+            'chevron-left': <path d="m15 18-6-6 6-6" />,
+            'user': <g><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></g>,
+            'minus': <line x1="5" x2="19" y1="12" y2="12" />,
+            'plus': <g><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></g>
+        };
+
         const Icon = ({ name, size = 24, className = "" }) => {
-            useEffect(() => {
-                if (window.lucide) {
-                    window.lucide.createIcons();
-                }
-            }, [name]);
-            return <i data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
+            return (
+                <svg 
+                    width={size} 
+                    height={size} 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    className={className}
+                >
+                    {ICON_PATHS[name] || null}
+                </svg>
+            );
         };
 
         const App = () => {
@@ -63,7 +91,6 @@
                 { id: 'hospital', name: '醫院報到', icon: 'hospital', color: 'bg-blue-600', description: '到醫院看診或領藥，掃描單據可快速報到或查資訊。', isDark: false },
             ];
 
-            // 模擬掃描邏輯與補光燈檢測
             useEffect(() => {
                 if (step === 2) {
                     if (scenario?.isDark && !isFlashlightOn) {
@@ -77,7 +104,6 @@
                         setIsStable(true);
                         
                         setTimeout(() => {
-                            // 模擬隨機出現詐騙警示（教育意義）
                             if (Math.random() > 0.8) {
                                 setShowScamAlert(true);
                             } else {
@@ -101,7 +127,7 @@
                 switch (scenario?.id) {
                     case 'food':
                         return (
-                            <div className="flex flex-col h-full bg-white text-slate-900 animate-in slide-in-from-right duration-300">
+                            <div className="flex flex-col h-full bg-white text-slate-900 overflow-hidden">
                                 <div className="bg-orange-500 p-4 text-white flex items-center gap-2">
                                     <Icon name="utensils" />
                                     <h3 className="text-xl font-bold">點餐系統</h3>
@@ -132,7 +158,7 @@
                         );
                     case 'social':
                         return (
-                            <div className="flex flex-col h-full bg-[#1c1c1c] animate-in slide-in-from-right duration-300">
+                            <div className="flex flex-col h-full bg-[#1c1c1c]">
                                 <div className="bg-[#00c300] p-4 text-white flex justify-between items-center">
                                     <button onClick={() => setStep(0)}><Icon name="chevron-left" size={32} /></button>
                                     <h3 className="text-2xl font-bold">加入好友</h3>
@@ -155,7 +181,7 @@
                         );
                     case 'hospital':
                         return (
-                            <div className="flex flex-col h-full bg-slate-50 text-slate-900 animate-in slide-in-from-right duration-300">
+                            <div className="flex flex-col h-full bg-slate-50 text-slate-900">
                                 <div className="bg-blue-800 p-4 text-white flex items-center gap-2 shadow-lg">
                                     <Icon name="hospital" />
                                     <h3 className="text-xl font-bold">掛號報到系統</h3>
@@ -207,7 +233,7 @@
                         )}
 
                         {step === 1 && (
-                            <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-10 animate-in fade-in duration-500">
+                            <div className="flex flex-col items-center justify-center h-full p-8 text-center space-y-10">
                                 <div className="relative">
                                     <Icon name="smartphone" size={120} className="text-blue-400" />
                                     <div className="absolute -right-4 -top-4 bg-yellow-500 rounded-full w-12 h-12 flex items-center justify-center text-black font-black text-xl border-4 border-black">1</div>
@@ -241,7 +267,7 @@
                                     </button>
                                 </div>
                                 {showScamAlert && (
-                                    <div className="absolute inset-0 bg-black/95 flex items-center justify-center p-6 z-50 animate-in zoom-in duration-300">
+                                    <div className="absolute inset-0 bg-black/95 flex items-center justify-center p-6 z-50">
                                         <div className="bg-white rounded-[2rem] p-6 text-slate-900 space-y-5 border-[6px] border-red-500 shadow-2xl">
                                             <div className="flex flex-col items-center gap-2 text-red-600 text-center">
                                                 <Icon name="alert-triangle" size={60} className="animate-bounce" />
@@ -259,7 +285,7 @@
                         )}
 
                         {step === 3 && (
-                            <div className="flex flex-col items-center justify-center h-full p-10 text-center bg-green-950/90 animate-in fade-in duration-700">
+                            <div className="flex flex-col items-center justify-center h-full p-10 text-center bg-green-950/90">
                                 <div className="bg-green-500 p-6 rounded-full shadow-[0_0_50px_rgba(34,197,94,0.8)] mb-6">
                                     <Icon name="check-circle-2" size={100} className="text-white" />
                                 </div>

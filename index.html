@@ -1,0 +1,10 @@
+<!-- 引入 PWA 設定 -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#eab308">
+
+<!-- 註冊 Service Worker -->
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
